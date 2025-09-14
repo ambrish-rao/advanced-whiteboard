@@ -2,16 +2,18 @@ class Whiteboard {
     constructor() {
         this.canvas = document.getElementById('whiteboard');
         this.ctx = this.canvas.getContext('2d');
+
         this.currentTool = 'pen';
         this.currentColor = '#000000';
         this.brushSize = 5;
+
         this.isDrawing = false;
         this.lastX = 0;
         this.lastY = 0;
+
         this.history = [];
         this.historyIndex = -1;
-        this.fontSize = 24;
-        this.fontFamily = 'Arial';
+
         this.startX = 0;
         this.startY = 0;
         this.snapshot = null;
@@ -25,20 +27,25 @@ class Whiteboard {
         this.setupTools();
         this.saveState();
 
-        // Handle window resize
+        // Resize handling: keep content by redrawing snapshot
         window.addEventListener('resize', () => {
             const dataUrl = this.canvas.toDataURL();
             this.setCanvasSize();
             const img = new Image();
-            img.onload = () => this.ctx.drawImage(img, 0, 0);
+            img.onload = () => {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            };
             img.src = dataUrl;
         });
     }
 
     setCanvasSize() {
         const container = document.querySelector('.canvas-container');
-        this.canvas.width = container.clientWidth - 40;
-        this.canvas.height = container.clientHeight - 40;
+        // leave some padding so canvas is visible inside container
+        const padding = 40;
+        this.canvas.width = Math.max(300, container.clientWidth - padding);
+        this.canvas.height = Math.max(200, container.clientHeight - padding);
     }
 
     setupEventListeners() {
@@ -48,77 +55,92 @@ class Whiteboard {
         this.canvas.addEventListener('mouseup', this.stopDrawing.bind(this));
         this.canvas.addEventListener('mouseout', this.stopDrawing.bind(this));
 
-        // Font size and family controls
-        document.getElementById('font-size').addEventListener('input', (e) => {
-            this.fontSize = parseInt(e.target.value);
-        });
-        document.getElementById('font-family').addEventListener('change', (e) => {
-            this.fontFamily = e.target.value;
-        });
+        // Touch events (map to mouse)
+        this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+        this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+        this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
 
-        // Touch events
-        this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
-        this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
-        this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
-
-        // Tool selection buttons
+        // Tool buttons
         document.querySelectorAll('.tool-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.setTool(e.currentTarget.dataset.tool);
+                const tool = e.currentTarget.dataset.tool;
+                this.setTool(tool);
                 document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
         });
 
-        // Color selection buttons
+        // Color pickers
         document.querySelectorAll('.color-picker').forEach(picker => {
             picker.addEventListener('click', (e) => {
-                this.setColor(e.currentTarget.dataset.color);
+                const color = e.currentTarget.dataset.color;
+                this.setColor(color);
                 document.querySelectorAll('.color-picker').forEach(p => p.classList.remove('active'));
                 e.currentTarget.classList.add('active');
-                document.getElementById('custom-color-picker').value = e.currentTarget.dataset.color;
+                const custom = document.getElementById('custom-color-picker');
+                if (custom) custom.value = color;
             });
         });
 
-        // Custom color picker
-        document.getElementById('custom-color-picker').addEventListener('input', (e) => {
-            this.setColor(e.target.value);
-            document.querySelectorAll('.color-picker').forEach(p => p.classList.remove('active'));
-        });
+        // Custom color input
+        const customColor = document.getElementById('custom-color-picker');
+        if (customColor) {
+            customColor.addEventListener('input', (e) => {
+                this.setColor(e.target.value);
+                document.querySelectorAll('.color-picker').forEach(p => p.classList.remove('active'));
+            });
+        }
 
-        // Brush size control
-        document.getElementById('brush-size').addEventListener('input', (e) => {
-            this.setBrushSize(e.target.value);
-            document.getElementById('brush-size-value').textContent = `${e.target.value}px`;
-        });
+        // Brush size
+        const brush = document.getElementById('brush-size');
+        if (brush) {
+            brush.addEventListener('input', (e) => {
+                this.setBrushSize(e.target.value);
+                const label = document.getElementById('brush-size-value');
+                if (label) label.textContent = `${e.target.value}px`;
+            });
+        }
 
-        // Clear canvas button
-        document.getElementById('clear-btn').addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear the canvas?')) {
-                this.clearCanvas();
-            }
-        });
+        // Clear / Save / Undo / Redo
+        const clearBtn = document.getElementById('clear-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear the canvas?')) {
+                    this.clearCanvas();
+                }
+            });
+        }
 
-        // Save canvas as image
-        document.getElementById('save-btn').addEventListener('click', () => {
-            this.saveCanvas();
-        });
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) saveBtn.addEventListener('click', () => this.saveCanvas());
 
-        // Undo and redo buttons
-        document.getElementById('undo-btn').addEventListener('click', () => this.undo());
-        document.getElementById('redo-btn').addEventListener('click', () => this.redo());
+        const undoBtn = document.getElementById('undo-btn');
+        if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
+
+        const redoBtn = document.getElementById('redo-btn');
+        if (redoBtn) redoBtn.addEventListener('click', () => this.redo());
 
         // Image upload
-        document.getElementById('image-upload').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            img.onload = () => {
-                this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-                this.saveState();
-            };
-        });
+        const imgInput = document.getElementById('image-upload');
+        if (imgInput) {
+            imgInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const img = new Image();
+                img.onload = () => {
+                    // Draw image centered and scaled to canvas while preserving aspect ratio
+                    const ratio = Math.min(this.canvas.width / img.width, this.canvas.height / img.height);
+                    const w = img.width * ratio;
+                    const h = img.height * ratio;
+                    const x = (this.canvas.width - w) / 2;
+                    const y = (this.canvas.height - h) / 2;
+                    this.ctx.drawImage(img, x, y, w, h);
+                    this.saveState();
+                    URL.revokeObjectURL(img.src);
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
     }
 
     setupTools() {
@@ -129,69 +151,63 @@ class Whiteboard {
 
     setTool(tool) {
         this.currentTool = tool;
-        this.canvas.style.cursor = tool === 'eraser' ? 'crosshair' : 'crosshair';
-    }
 
+        // Cursor styling according to tool
+        if (tool === 'pen') {
+            this.canvas.style.cursor = 'url("data:image/svg+xml;utf8,\
+                <svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'black\'>\
+                <path d=\'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z\'/>\
+                </svg>") 0 24, auto';
+        } else if (tool === 'eraser') {
+            this.canvas.style.cursor = 'url("data:image/svg+xml;utf8,\
+            <svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'black\'>\
+            <path d=\'M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0z\'/>\
+            </svg>") 0 24, auto';
+        } else {
+            // line, rectangle, circle, arrow
+            this.canvas.style.cursor = 'crosshair';
+        }
+    }
     setColor(color) {
         this.currentColor = color;
     }
 
     setBrushSize(size) {
-        this.brushSize = parseInt(size);
+        this.brushSize = parseInt(size, 10) || 1;
     }
 
     startDrawing(e) {
-        const pos = this.getMousePos(e);
-
-        if (this.currentTool === 'text') {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = 'Type here';
-            input.style.position = 'absolute';
-            input.style.left = `${e.clientX}px`;
-            input.style.top = `${e.clientY}px`;
-            input.style.fontSize = `${this.fontSize}px`;
-            input.style.border = '1px dashed #666';
-            input.style.background = 'transparent';
-            input.style.color = this.currentColor;
-            input.style.zIndex = 1000;
-            document.body.appendChild(input);
-            input.focus();
-            input.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    this.ctx.fillStyle = this.currentColor;
-                    this.ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-                    this.ctx.fillText(input.value, pos.x, pos.y);
-                    document.body.removeChild(input);
-                    this.saveState();
-                }
-            });
-            return;
-        }
+        const pos = this.getPointerPos(e);
 
         this.isDrawing = true;
         [this.lastX, this.lastY] = [pos.x, pos.y];
         [this.startX, this.startY] = [pos.x, pos.y];
+
         if (['line', 'rectangle', 'circle', 'arrow'].includes(this.currentTool)) {
+            // keep a snapshot to draw shape preview
             this.snapshot = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         }
     }
 
     draw(e) {
         if (!this.isDrawing) return;
-        const pos = this.getMousePos(e);
+        const pos = this.getPointerPos(e);
+
         this.ctx.lineJoin = 'round';
         this.ctx.lineCap = 'round';
         this.ctx.lineWidth = this.brushSize;
         this.ctx.strokeStyle = this.currentColor;
+        this.ctx.fillStyle = this.currentColor;
 
         if (this.currentTool === 'pen') {
+            this.ctx.globalCompositeOperation = 'source-over';
             this.ctx.beginPath();
             this.ctx.moveTo(this.lastX, this.lastY);
             this.ctx.lineTo(pos.x, pos.y);
             this.ctx.stroke();
             [this.lastX, this.lastY] = [pos.x, pos.y];
         } else if (this.currentTool === 'eraser') {
+            // erase by drawing with destination-out
             this.ctx.globalCompositeOperation = 'destination-out';
             this.ctx.beginPath();
             this.ctx.arc(pos.x, pos.y, this.brushSize, 0, Math.PI * 2);
@@ -218,7 +234,7 @@ class Whiteboard {
                 const dx = pos.x - this.startX;
                 const dy = pos.y - this.startY;
                 const angle = Math.atan2(dy, dx);
-                const headLength = 15;
+                const headLength = Math.min(25, Math.sqrt(dx * dx + dy * dy) * 0.2);
                 const arrowAngle = Math.PI / 7;
 
                 this.ctx.moveTo(this.startX, this.startY);
@@ -250,7 +266,9 @@ class Whiteboard {
         const touch = e.touches[0];
         const mouseEvent = new MouseEvent('mousedown', {
             clientX: touch.clientX,
-            clientY: touch.clientY
+            clientY: touch.clientY,
+            bubbles: true,
+            cancelable: true
         });
         this.canvas.dispatchEvent(mouseEvent);
     }
@@ -260,22 +278,27 @@ class Whiteboard {
         const touch = e.touches[0];
         const mouseEvent = new MouseEvent('mousemove', {
             clientX: touch.clientX,
-            clientY: touch.clientY
+            clientY: touch.clientY,
+            bubbles: true,
+            cancelable: true
         });
         this.canvas.dispatchEvent(mouseEvent);
     }
 
     handleTouchEnd(e) {
         e.preventDefault();
-        const mouseEvent = new MouseEvent('mouseup');
+        const mouseEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true });
         this.canvas.dispatchEvent(mouseEvent);
     }
 
-    getMousePos(e) {
+    getPointerPos(e) {
         const rect = this.canvas.getBoundingClientRect();
+        // If it's a MouseEvent, clientX/clientY are present; for safety support touch's changedTouches
+        const clientX = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const clientY = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
         return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: clientX - rect.left,
+            y: clientY - rect.top
         };
     }
 
@@ -285,17 +308,32 @@ class Whiteboard {
     }
 
     saveState() {
-        if (this.historyIndex < this.history.length - 1) {
-            this.history = this.history.slice(0, this.historyIndex + 1);
+        try {
+            // trim future history if any
+            if (this.historyIndex < this.history.length - 1) {
+                this.history = this.history.slice(0, this.historyIndex + 1);
+            }
+            this.history.push(this.canvas.toDataURL());
+            this.historyIndex = this.history.length - 1;
+
+            // limit history size to avoid memory bloat
+            const maxHistory = 50;
+            if (this.history.length > maxHistory) {
+                this.history = this.history.slice(this.history.length - maxHistory);
+                this.historyIndex = this.history.length - 1;
+            }
+        } catch (err) {
+            console.error('Failed to save state:', err);
         }
-        this.history.push(this.canvas.toDataURL());
-        this.historyIndex++;
     }
 
     undo() {
         if (this.historyIndex > 0) {
             this.historyIndex--;
             this.redraw();
+        } else {
+            // clear if at first state
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
     }
 
@@ -307,12 +345,17 @@ class Whiteboard {
     }
 
     redraw() {
+        const src = this.history[this.historyIndex];
+        if (!src) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            return;
+        }
         const img = new Image();
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
         };
-        img.src = this.history[this.historyIndex];
+        img.src = src;
     }
 
     saveCanvas() {

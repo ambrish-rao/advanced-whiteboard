@@ -78,14 +78,7 @@
                             </svg>
                             Arrow
                         </button>
-                        <button class="tool-btn" data-tool="text">
-                            <svg width="24" height="24" viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M4 4h16v2H4V4zm0 6h16v2H4v-2zm0 6h10v2H4v-2z" />
-                            </svg>
-                            Text
-                        </button>
-
-
+                        
                     </div>
                 </div>
 
@@ -112,6 +105,7 @@
                     <input type="range" id="brush-size" min="1" max="50" value="5">
                     <span id="brush-size-value">5px</span>
                 </div>
+
                 <div class="tool-section">
                     <h3>Image Upload</h3>
                     <label for="image-upload" class="btn action-btn"
@@ -120,24 +114,6 @@
                     </label>
                     <input type="file" id="image-upload" accept="image/*" style="display: none;">
                 </div>
-                <div class="tool-section">
-                    <h3>Text Settings</h3>
-
-                    <label for="font-size">Font Size</label>
-                    <input type="number" id="font-size" min="10" max="100" value="24"
-                        style="width: 100%; margin-bottom: 10px;">
-
-                    <label for="font-family">Font Family</label>
-                    <select id="font-family" style="width: 100%; margin-bottom: 10px;">
-                        <option value="Arial">Arial</option>
-                        <option value="Verdana">Verdana</option>
-                        <option value="Georgia">Georgia</option>
-                        <option value="Courier New">Courier New</option>
-                        <option value="Times New Roman">Times New Roman</option>
-                    </select>
-                </div>
-
-
             </aside>
 
             <main class="canvas-container">
