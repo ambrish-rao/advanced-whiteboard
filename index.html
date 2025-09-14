@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dynamic Whiteboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Advanced Whiteboard</h1>
+            <div class="header-controls">
+                <button id="undo-btn" class="btn action-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z" />
+                    </svg>
+                    Undo
+                </button>
+                <button id="redo-btn" class="btn action-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z" />
+                    </svg>
+                    Redo
+                </button>
+
+                <button id="clear-btn" class="btn danger">Clear Canvas</button>
+                <button id="save-btn" class="btn success">Save</button>
+            </div>
+
+        </header>
+
+        <div class="main-content">
+            <aside class="toolbar">
+                <div class="tool-section">
+                    <h3>Tools</h3>
+                    <div class="tool-options">
+                        <button class="tool-btn active" data-tool="pen">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                            </svg>
+                            Pen
+                        </button>
+                        <button class="tool-btn" data-tool="eraser">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53l-4.95-4.95l-4.95 4.95z" />
+                            </svg>
+                            Eraser
+                        </button>
+                        <button class="tool-btn" data-tool="line">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M15 3v18l-8-6v-6l8-6z" />
+                            </svg>
+                            Line
+                        </button>
+                        <button class="tool-btn" data-tool="rectangle">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M2 4h20v16H2V4z" />
+                            </svg>
+                            Rectangle
+                        </button>
+                        <button class="tool-btn" data-tool="circle">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                            </svg>
+                            Circle
+                        </button>
+                        <button class="tool-btn" data-tool="arrow">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M2 12l20-8-8 20-2-6-6-2z" />
+                            </svg>
+                            Arrow
+                        </button>
+                        <button class="tool-btn" data-tool="text">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M4 4h16v2H4V4zm0 6h16v2H4v-2zm0 6h10v2H4v-2z" />
+                            </svg>
+                            Text
+                        </button>
+
+
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Colors</h3>
+                    <div class="color-options">
+                        <div class="color-picker active" data-color="#000000" style="background-color: #000000;"></div>
+                        <div class="color-picker" data-color="#ff0000" style="background-color: #ff0000;"></div>
+                        <div class="color-picker" data-color="#00ff00" style="background-color: #00ff00;"></div>
+                        <div class="color-picker" data-color="#0000ff" style="background-color: #0000ff;"></div>
+                        <div class="color-picker" data-color="#ffff00" style="background-color: #ffff00;"></div>
+                        <div class="color-picker" data-color="#ff00ff" style="background-color: #ff00ff;"></div>
+                        <div class="color-picker" data-color="#00ffff" style="background-color: #00ffff;"></div>
+                        <div class="color-picker" data-color="#ffffff"
+                            style="background-color: #ffffff; border: 1px solid #ccc;"></div>
+                    </div>
+                    <div class="custom-color">
+                        <input type="color" id="custom-color-picker" value="#000000">
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Brush Size</h3>
+                    <input type="range" id="brush-size" min="1" max="50" value="5">
+                    <span id="brush-size-value">5px</span>
+                </div>
+                <div class="tool-section">
+                    <h3>Image Upload</h3>
+                    <label for="image-upload" class="btn action-btn"
+                        style="margin-top: 10px; display: inline-block; text-align: center;">
+                        Upload Image
+                    </label>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                </div>
+                <div class="tool-section">
+                    <h3>Text Settings</h3>
+
+                    <label for="font-size">Font Size</label>
+                    <input type="number" id="font-size" min="10" max="100" value="24"
+                        style="width: 100%; margin-bottom: 10px;">
+
+                    <label for="font-family">Font Family</label>
+                    <select id="font-family" style="width: 100%; margin-bottom: 10px;">
+                        <option value="Arial">Arial</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                    </select>
+                </div>
+
+
+            </aside>
+
+            <main class="canvas-container">
+                <canvas id="whiteboard"></canvas>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

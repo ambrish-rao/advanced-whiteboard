@@ -1,0 +1,73 @@
+<!--
+📌 Feature Development Roadmap (Step by Step)
+Phase 1: Core Whiteboard
+
+        Drawing (pen, eraser, colors, stroke size)
+        Shapes (rectangle, circle, line, arrows)
+        Text Tool (add/edit text, font size, color, style)
+        Sticky Notes (drag & drop, color options)
+        Image Upload (insert, resize, rotate, drag)
+
+Phase 2: Multi-Page & Export
+
+        Multi-page whiteboard (like slides) with navigation
+        Export as PNG (single page)
+        Export as PDF (all pages, slide-by-slide)
+
+Phase 3: Collaboration
+
+        Real-time sync with Socket.IO
+        Multi-user drawing on same board
+        Live chat sidebar (Socket.IO + MongoDB for storing chats)
+        Presence indicators (show who is online)
+
+Phase 4: Advanced Features
+
+         History & Version Control (Undo/Redo + Timeline Playback)  
+         Zoom & Pan tool (like Figma/Miro)  
+         AI Shape Detection (convert rough shapes to perfect ones)  
+         Voice Notes (record → save → attach to board)
+
+Phase 5: Authentication & User Profiles
+
+        Signup/Login (JWT Auth + Bcrypt password hashing)
+        Save boards to user account
+        My Boards dashboard (list, open, delete)
+        Share boards (unique link for collaboration)
+
+✅ Suggested Development Order
+
+        Core Whiteboard tools   
+        Multi-page + Export 
+        Collaboration (Socket.IO)   
+        History + Zoom/Pan  
+        AI Shape Detection (optional, ML-based) 
+        Authentication & Profiles   
+        Voice Notes + Chat
+
+
+🛠 Tech Stack Selection
+Frontend (UI)
+
+        React.js (with Vite) → Fast, modular frontend
+        Fabric.js / Konva.js → Whiteboard drawing, shapes, images, sticky notes, text tool
+        TailwindCSS + ShadCN UI → Clean, modern UI
+        Framer Motion → Animations (smooth transitions, toolbars)
+
+Backend (API + Collaboration)
+
+        Node.js + Express.js → API server
+        Socket.IO (WebSockets) → Real-time collaboration (multi-user drawing & chat)
+        Multer (file upload) → Image upload handling
+        JWT Auth → Secure login/signup
+        
+Database
+
+    MongoDB (Atlas) → User profiles, saved whiteboards, history, chat messages
+    (Optional) Redis → For fast session + real-time sync
+
+Other Tools
+    PDFKit → Export whiteboards as PDF
+    FFmpeg (optional) → Voice note processing
+    Cloudinary / AWS S3 → Store images/voice notes
+-->
